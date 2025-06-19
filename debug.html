@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>챗봇 디버그 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        input[type="text"] {
+            width: 300px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 챗봇 디버그 테스트</h1>
+        
+        <!-- 시스템 상태 테스트 -->
+        <div class="test-section">
+            <h3>1. 시스템 상태 확인</h3>
+            <button onclick="testSystemStatus()">시스템 상태 확인</button>
+            <button onclick="testDebugInfo()">디버그 정보 확인</button>
+            <div id="status-log" class="log"></div>
+        </div>
+
+        <!-- API 연결 테스트 -->
+        <div class="test-section">
+            <h3>2. API 연결 테스트</h3>
+            <button onclick="testSimpleApi()">간단한 API 테스트</button>
+            <button onclick="testChatApi()">채팅 API 테스트</button>
+            <div id="api-log" class="log"></div>
+        </div>
+
+        <!-- 실제 챗봇 테스트 -->
+        <div class="test-section">
+            <h3>3. 실제 챗봇 테스트</h3>
+            <input type="text" id="test-message" placeholder="테스트 메시지 입력" value="안녕하세요">
+            <button onclick="testRealChat()">실제 챗봇 테스트</button>
+            <button onclick="testDocumentSearch()">문서 검색 테스트</button>
+            <div id="chat-log" class="log"></div>
+        </div>
+
+        <!-- 전체 로그 -->
+        <div class="test-section">
+            <h3>4. 전체 로그</h3>
+            <button onclick="clearAllLogs()">로그 지우기</button>
+            <div id="all-log" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        // 로그 함수들
+        function log(message, type = 'info', targetId = 'all-log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}\n`;
+            
+            // 특정 섹션 로그
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                targetElement.innerHTML += `<span class="${type}">${logMessage}</span>`;
+                targetElement.scrollTop = targetElement.scrollHeight;
+            }
+            
+            // 전체 로그
+            const allLogElement = document.getElementById('all-log');
+            if (allLogElement && targetId !== 'all-log') {
+                allLogElement.innerHTML += `<span class="${type}">${logMessage}</span>`;
+                allLogElement.scrollTop = allLogElement.scrollHeight;
+            }
+            
+            // 콘솔에도 출력
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function clearAllLogs() {
+            ['status-log', 'api-log', 'chat-log', 'all-log'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.innerHTML = '';
+            });
+        }
+
+        // 1. 시스템 상태 테스트
+        async function testSystemStatus() {
+            log('🔍 시스템 상태 확인 시작...', 'info', 'status-log');
+            
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                log(`✅ 상태 API 응답: ${JSON.stringify(data, null, 2)}`, 'success', 'status-log');
+                
+                if (data.data_loaded) {
+                    log(`📊 처리된 파일: ${data.processed_files}개, 청크: ${data.total_chunks}개`, 'success', 'status-log');
+                } else {
+                    log('⚠️ 처리된 문서가 없습니다. 파일을 업로드해주세요.', 'error', 'status-log');
+                }
+                
+            } catch (error) {
+                log(`❌ 상태 확인 오류: ${error.message}`, 'error', 'status-log');
+            }
+        }
+
+        async function testDebugInfo() {
+            log('🔍 디버그 정보 확인 시작...', 'info', 'status-log');
+            
+            try {
+                const response = await fetch('/api/debug');
+                const data = await response.json();
+                
+                log(`🔧 디버그 정보: ${JSON.stringify(data, null, 2)}`, 'info', 'status-log');
+                
+            } catch (error) {
+                log(`❌ 디버그 정보 오류: ${error.message}`, 'error', 'status-log');
+            }
+        }
+
+        // 2. API 연결 테스트
+        async function testSimpleApi() {
+            log('🧪 간단한 API 테스트 시작...', 'info', 'api-log');
+            
+            try {
+                const response = await fetch('/api/test-chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: '테스트 메시지' }),
+                });
+                
+                log(`📡 응답 상태: ${response.status} ${response.statusText}`, 'info', 'api-log');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                log(`✅ 테스트 API 성공: ${JSON.stringify(data, null, 2)}`, 'success', 'api-log');
+                
+            } catch (error) {
+                log(`❌ 테스트 API 오류: ${error.message}`, 'error', 'api-log');
+            }
+        }
+
+        async function testChatApi() {
+            log('💬 채팅 API 테스트 시작...', 'info', 'api-log');
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: '안녕하세요' }),
+                });
+                
+                log(`📡 채팅 API 응답 상태: ${response.status}`, 'info', 'api-log');
+                
+                const data = await response.json();
+                log(`💬 채팅 API 응답: ${JSON.stringify(data, null, 2)}`, 'success', 'api-log');
+                
+                if (data.success) {
+                    log(`✅ 채팅 성공! 메시지: ${data.message.substring(0, 100)}...`, 'success', 'api-log');
+                } else {
+                    log(`⚠️ 채팅 실패: ${data.message}`, 'error', 'api-log');
+                }
+                
+            } catch (error) {
+                log(`❌ 채팅 API 오류: ${error.message}`, 'error', 'api-log');
+            }
+        }
+
+        // 3. 실제 챗봇 테스트
+        async function testRealChat() {
+            const message = document.getElementById('test-message').value;
+            if (!message) {
+                log('❌ 메시지를 입력해주세요.', 'error', 'chat-log');
+                return;
+            }
+            
+            log(`🗨️ 실제 채팅 테스트: "${message}"`, 'info', 'chat-log');
+            
+            try {
+                const startTime = Date.now();
+                
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message }),
+                });
+                
+                const endTime = Date.now();
+                const responseTime = endTime - startTime;
+                
+                log(`⏱️ 응답 시간: ${responseTime}ms`, 'info', 'chat-log');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    log(`✅ 채팅 성공!`, 'success', 'chat-log');
+                    log(`📝 답변: ${data.message}`, 'success', 'chat-log');
+                    if (data.debug_info) {
+                        log(`🔧 디버그: ${data.debug_info}`, 'info', 'chat-log');
+                    }
+                } else {
+                    log(`❌ 채팅 실패: ${data.message}`, 'error', 'chat-log');
+                }
+                
+            } catch (error) {
+                log(`❌ 실제 채팅 오류: ${error.message}`, 'error', 'chat-log');
+            }
+        }
+
+        async function testDocumentSearch() {
+            log('🔍 문서 검색 테스트 시작...', 'info', 'chat-log');
+            
+            const searchQueries = [
+                '회사 정보',
+                '전화번호',
+                '제품 정보',
+                '연락처',
+                '특징'
+            ];
+            
+            for (const query of searchQueries) {
+                try {
+                    log(`🔍 검색: "${query}"`, 'info', 'chat-log');
+                    
+                    const response = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ message: query }),
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success && data.message.includes('답변')) {
+                        log(`✅ "${query}" 검색 성공`, 'success', 'chat-log');
+                    } else {
+                        log(`⚠️ "${query}" 검색 결과 없음`, 'error', 'chat-log');
+                    }
+                    
+                    // 1초 대기
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                } catch (error) {
+                    log(`❌ "${query}" 검색 오류: ${error.message}`, 'error', 'chat-log');
+                }
+            }
+        }
+
+        // 페이지 로드시 자동 테스트
+        window.addEventListener('load', function() {
+            log('🚀 챗봇 디버그 페이지 로드됨', 'info');
+            log('📋 순서대로 테스트해보세요:', 'info');
+            log('1. 시스템 상태 확인', 'info');
+            log('2. API 연결 테스트', 'info');
+            log('3. 실제 챗봇 테스트', 'info');
+        });
+    </script>
+</body>
+</html>

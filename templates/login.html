@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM TFT 챗봇 v2 - 관리자 로그인</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            position: relative;
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            transform: translateX(-5px);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            color: #667eea;
+            font-size: 2rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .login-header p {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            color: #374151;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .form-group input {
+            padding: 15px 20px;
+            padding-left: 50px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 1.1rem;
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+
+        .flash-message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .flash-message.success {
+            background: #dcfce7;
+            border: 1px solid #22c55e;
+            color: #15803d;
+        }
+
+        .flash-message.error {
+            background: #fef2f2;
+            border: 1px solid #ef4444;
+            color: #dc2626;
+        }
+
+        .flash-message.warning {
+            background: #fefce8;
+            border: 1px solid #eab308;
+            color: #a16207;
+        }
+
+        .security-info {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .security-info h4 {
+            color: #374151;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .security-info ul {
+            margin-left: 16px;
+            line-height: 1.5;
+        }
+
+        .demo-credentials {
+            background: #eff6ff;
+            border: 1px solid #3b82f6;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 16px;
+            font-size: 0.85rem;
+        }
+
+        .demo-credentials h4 {
+            color: #1d4ed8;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .demo-credentials code {
+            background: rgba(59, 130, 246, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+
+            .login-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .back-link {
+                position: static;
+                margin-bottom: 20px;
+                display: inline-flex;
+            }
+        }
+
+        /* 로딩 상태 */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .loading .login-btn {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <a href="/" class="back-link">
+            <i class="fas fa-arrow-left"></i> 챗봇으로 돌아가기
+        </a>
+
+        <div class="login-header">
+            <h1>
+                <i class="fas fa-shield-alt"></i>
+                관리자 로그인
+            </h1>
+            <p>CRM TFT 챗봇 v2 관리자 페이지 접속</p>
+        </div>
+
+        <!-- Flash 메시지 -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'warning' else 'times-circle' }}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" class="login-form" id="login-form">
+            <div class="form-group">
+                <label for="username">사용자명</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text" id="username" name="username" required autocomplete="username">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">비밀번호</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                </div>
+            </div>
+
+            <button type="submit" class="login-btn" id="login-btn">
+                <i class="fas fa-sign-in-alt"></i>
+                로그인
+            </button>
+        </form>
+
+        <!-- 데모 계정 정보
+        <div class="demo-credentials">
+            <h4>
+                <i class="fas fa-info-circle"></i>
+                데모 계정
+            </h4>
+            <p>
+                사용자명: <code>admin</code><br>
+                비밀번호: <code>admin123</code>
+            </p>
+        </div> -->
+
+        <!-- 보안 안내 -->
+        <div class="security-info">
+            <h4>
+                <i class="fas fa-shield-alt"></i>
+                보안 안내
+            </h4>
+            <ul>
+                <li>관리자 계정 정보는 안전하게 보관하세요</li>
+                <li>로그인 후 자동으로 세션이 유지됩니다</li>
+                <li>사용 완료 후 반드시 로그아웃하세요</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        class LoginManager {
+            constructor() {
+                this.loginForm = document.getElementById('login-form');
+                this.loginBtn = document.getElementById('login-btn');
+                this.initializeEvents();
+            }
+
+            initializeEvents() {
+                this.loginForm.addEventListener('submit', (e) => {
+                    this.handleLogin(e);
+                });
+
+                // Enter 키 처리
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        this.loginForm.dispatchEvent(new Event('submit'));
+                    }
+                });
+            }
+
+            handleLogin(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value;
+
+                if (!username || !password) {
+                    this.showMessage('사용자명과 비밀번호를 입력해주세요.', 'error');
+                    return;
+                }
+
+                this.setLoading(true);
+                
+                // 폼 제출
+                setTimeout(() => {
+                    this.loginForm.submit();
+                }, 100);
+            }
+
+            setLoading(loading) {
+                if (loading) {
+                    document.body.classList.add('loading');
+                    this.loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 로그인 중...';
+                    this.loginBtn.disabled = true;
+                } else {
+                    document.body.classList.remove('loading');
+                    this.loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> 로그인';
+                    this.loginBtn.disabled = false;
+                }
+            }
+
+            showMessage(message, type = 'error') {
+                // 기존 메시지 제거
+                const existingMessages = document.querySelectorAll('.flash-message');
+                existingMessages.forEach(msg => msg.remove());
+
+                // 새 메시지 생성
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `flash-message ${type}`;
+                messageDiv.innerHTML = `
+                    <i class="fas fa-${type === 'error' ? 'times-circle' : 'check-circle'}"></i>
+                    ${message}
+                `;
+
+                // 폼 앞에 삽입
+                this.loginForm.parentNode.insertBefore(messageDiv, this.loginForm);
+
+                // 3초 후 자동 제거
+                setTimeout(() => {
+                    messageDiv.remove();
+                }, 3000);
+            }
+        }
+
+        // 페이지 로드 후 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            new LoginManager();
+        });
+    </script>
+</body>
+</html>

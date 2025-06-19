@@ -1,0 +1,23 @@
+{
+  "v1.0.pdf": {
+    "file_path": "uploaded_documents\\v1.0.pdf",
+    "file_type": "PDF",
+    "chunks_count": 5,
+    "processed_date": "2025-06-18T16:06:56.559505",
+    "file_size": 81446
+  },
+  "5._25_1___v1.0.pdf": {
+    "file_path": "uploaded_documents\\5._25_1___v1.0.pdf",
+    "file_type": "PDF",
+    "chunks_count": 44,
+    "processed_date": "2025-06-18T16:30:07.190845",
+    "file_size": 1024303
+  },
+  "4._254__v1.1.pdf": {
+    "file_path": "uploaded_documents\\4._254__v1.1.pdf",
+    "file_type": "PDF",
+    "chunks_count": 46,
+    "processed_date": "2025-06-18T16:31:09.785550",
+    "file_size": 805676
+  }
+}

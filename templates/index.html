@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM TFT 챗봇 v2</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            max-height: 700px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .header-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .supported-formats {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .format-badge {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .admin-link {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .admin-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .messages-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .message.user-message {
+            flex-direction: row-reverse;
+        }
+
+        .message-content {
+            max-width: 75%;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .user-message .message-content {
+            flex-direction: row-reverse;
+        }
+
+        .message-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .bot-message .message-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .user-message .message-icon {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+        }
+
+        .message-text {
+            flex: 1;
+        }
+
+        .message-body {
+            background: white;
+            padding: 16px;
+            border-radius: 18px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .user-message .message-body {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            color: white;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .user-message .message-time {
+            text-align: left;
+        }
+
+        .files-info {
+            background: #e0f2fe;
+            border: 1px solid #0284c7;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+        }
+
+        .files-info h4 {
+            color: #0284c7;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .file-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .file-tag {
+            background: #0284c7;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .file-icon {
+            font-size: 0.7rem;
+        }
+
+        .file-type-pdf { color: rgba(239, 68, 68, 0.8); }
+        .file-type-word { color: rgba(37, 99, 235, 0.8); }
+        .file-type-powerpoint { color: rgba(234, 88, 12, 0.8); }
+        .file-type-excel { color: rgba(5, 150, 105, 0.8); }
+
+        .input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            padding: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        #message-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 12px 16px;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 20px;
+            padding: 12px 16px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .input-info {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 8px;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-content {
+            text-align: center;
+            color: #667eea;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #22c55e;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 2000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            background: #ef4444;
+        }
+
+        /* 디버그 버튼 */
+        .debug-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+            z-index: 1000;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .chat-container {
+                height: 95vh;
+                border-radius: 15px;
+            }
+
+            .header {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .admin-link {
+                position: static;
+                display: inline-block;
+                margin-top: 10px;
+            }
+
+            .supported-formats {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- 헤더 -->
+        <div class="header">
+            <h1><i class="fas fa-robot"></i> CRM TFT 챗봇 v2</h1>
+            <div class="header-subtitle">
+                <div class="status-indicator"></div>
+                <span id="status-text">다양한 문서를 분석하여 답변합니다</span>
+            </div>
+            <div class="supported-formats">
+                <div class="format-badge">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </div>
+                <div class="format-badge">
+                    <i class="fas fa-file-word"></i> Word
+                </div>
+                <div class="format-badge">
+                    <i class="fas fa-file-powerpoint"></i> PowerPoint
+                </div>
+                <div class="format-badge">
+                    <i class="fas fa-file-excel"></i> Excel
+                </div>
+            </div>
+        </div>
+
+        <!-- 메시지 영역 -->
+        <div class="messages-container" id="messages-container">
+            <!-- 파일 정보 -->
+            <div class="files-info" id="files-info" style="display: none;">
+                <h4>
+                    <i class="fas fa-files"></i> 처리된 문서
+                </h4>
+                <div class="file-list" id="file-list"></div>
+            </div>
+
+            <!-- 초기 메시지 -->
+            <div class="message bot-message">
+                <div class="message-content">
+                    <div class="message-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-text">
+                        <div class="message-body">
+                            안녕하세요! 저는 CRM TFT 챗봇 v2 입니다. 📚<br><br>
+                            CRM TFT에서 업로드한 문서의 내용을 분석하여 정확한 답변을 제공합니다.<br><br>
+                            <strong>📁 지원 파일 형식:</strong><br>
+                            • PDF, Word, PowerPoint, Excel 문서<br><br>
+                            <strong>💡 이용 방법:</strong><br>
+                            • CRM TFT 업무 관련 질문을 자유롭게 해주세요<br>
+                            • 구체적인 질문일수록 더 정확한 답변을 받을 수 있습니다<br>
+                        </div>
+                        <div class="message-time" id="initial-time"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 입력 영역 -->
+        <div class="input-container">
+            <div class="input-wrapper">
+                <textarea
+                    id="message-input"
+                    placeholder="고객관리, LMS, CRM, 멤버스, 개인정보 관련 업무에 대해 궁금한 점을 입력해주세요..."
+                    rows="2"
+                ></textarea>
+                <button id="send-btn" class="send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            <div class="input-info">
+                Enter로 전송 | CRM TFT 업로드 문서 기반 답변
+            </div>
+        </div>
+
+        <!-- 로딩 표시 -->
+        <div class="loading-overlay" id="loading-overlay" style="display: none;">
+            <div class="loading-content">
+                <div class="loading-spinner"></div>
+                <p>문서를 분석하고 답변을 생성하는 중입니다...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 토스트 알림 -->
+    <div class="toast" id="toast"></div>
+
+    <!-- 디버그 버튼 -->
+    <button class="debug-btn" onclick="showDebugInfo()" title="디버그 정보">
+        <i class="fas fa-bug"></i>
+    </button>
+
+    <script>
+        // 전역 디버그 함수
+        function debugLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            console.log(`[${timestamp}] [${type.toUpperCase()}] ${message}`);
+        }
+
+        function showDebugInfo() {
+            debugLog('디버그 정보 표시 요청', 'debug');
+            alert('콘솔(F12)을 확인하세요. 디버그 정보가 출력됩니다.');
+            
+            // 현재 상태 출력
+            debugLog('=== 현재 챗봇 상태 ===', 'debug');
+            debugLog(`ChatBot 인스턴스: ${window.chatBot ? '존재' : '없음'}`, 'debug');
+            debugLog(`메시지 입력 필드: ${document.getElementById('message-input') ? '존재' : '없음'}`, 'debug');
+            debugLog(`전송 버튼: ${document.getElementById('send-btn') ? '존재' : '없음'}`, 'debug');
+            
+            // API 테스트
+            testApiConnection();
+        }
+
+        async function testApiConnection() {
+            debugLog('API 연결 테스트 시작...', 'debug');
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: '디버그 테스트' }),
+                });
+                
+                debugLog(`API 응답 상태: ${response.status}`, 'debug');
+                
+                const data = await response.json();
+                debugLog(`API 응답 성공: ${data.success}`, 'debug');
+                debugLog(`API 응답 메시지 길이: ${data.message ? data.message.length : 0}자`, 'debug');
+                
+            } catch (error) {
+                debugLog(`API 테스트 오류: ${error.message}`, 'error');
+            }
+        }
+
+        class ChatBot {
+            constructor() {
+                debugLog('ChatBot 초기화 시작...', 'info');
+                
+                this.messagesContainer = document.getElementById('messages-container');
+                this.messageInput = document.getElementById('message-input');
+                this.sendButton = document.getElementById('send-btn');
+                this.loadingOverlay = document.getElementById('loading-overlay');
+                this.filesInfo = document.getElementById('files-info');
+                
+                // 요소 존재 확인
+                if (!this.messagesContainer) {
+                    debugLog('❌ messages-container 요소를 찾을 수 없음', 'error');
+                    return;
+                }
+                if (!this.messageInput) {
+                    debugLog('❌ message-input 요소를 찾을 수 없음', 'error');
+                    return;
+                }
+                if (!this.sendButton) {
+                    debugLog('❌ send-btn 요소를 찾을 수 없음', 'error');
+                    return;
+                }
+                
+                debugLog('✅ 모든 DOM 요소 확인됨', 'info');
+                
+                this.initializeEvents();
+                this.updateStatus();
+                this.loadFiles();
+                this.setInitialTime();
+                
+                debugLog('✅ ChatBot 초기화 완료', 'info');
+                
+                // 전역에서 접근 가능하도록
+                window.chatBot = this;
+            }
+
+            initializeEvents() {
+                debugLog('이벤트 리스너 등록 시작...', 'info');
+                
+                // 전송 버튼 클릭
+                this.sendButton.addEventListener('click', (e) => {
+                    debugLog('전송 버튼 클릭됨', 'info');
+                    e.preventDefault();
+                    this.sendMessage();
+                });
+                
+                // Enter 키로 전송
+                this.messageInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        debugLog('Enter 키 눌림', 'info');
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+
+                // 자동 크기 조절
+                this.messageInput.addEventListener('input', () => {
+                    this.messageInput.style.height = 'auto';
+                    this.messageInput.style.height = Math.min(this.messageInput.scrollHeight, 120) + 'px';
+                });
+                
+                debugLog('✅ 이벤트 리스너 등록 완료', 'info');
+            }
+
+            setInitialTime() {
+                const now = new Date();
+                const initialTimeElement = document.getElementById('initial-time');
+                if (initialTimeElement) {
+                    initialTimeElement.textContent = 
+                        now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+                }
+            }
+
+            getFileIcon(fileType) {
+                const iconMap = {
+                    'PDF': 'fa-file-pdf file-type-pdf',
+                    'Word': 'fa-file-word file-type-word',
+                    'PowerPoint': 'fa-file-powerpoint file-type-powerpoint',
+                    'Excel': 'fa-file-excel file-type-excel',
+                    'Excel (Legacy)': 'fa-file-excel file-type-excel'
+                };
+                return iconMap[fileType] || 'fa-file';
+            }
+
+            async loadFiles() {
+                try {
+                    debugLog('파일 목록 로딩 시작...', 'info');
+                    
+                    const response = await fetch('/api/files');
+                    const data = await response.json();
+                    
+                    debugLog(`파일 API 응답: success=${data.success}, 파일 수=${data.files ? data.files.length : 0}`, 'info');
+                    
+                    if (data.success && data.files.length > 0) {
+                        this.filesInfo.style.display = 'block';
+                        
+                        const fileList = document.getElementById('file-list');
+                        fileList.innerHTML = data.files.map(file => {
+                            const iconClass = this.getFileIcon(file.file_type);
+                            return `<span class="file-tag">
+                                <i class="fas ${iconClass} file-icon"></i>
+                                ${file.filename} (${file.chunks_count}개 청크)
+                            </span>`;
+                        }).join('');
+
+                        // 파일 정보 헤더 업데이트
+                        const headerText = `처리된 문서 (${data.files.length}개 파일, ${data.total_chunks}개 청크)`;
+                        document.querySelector('.files-info h4').innerHTML = `
+                            <i class="fas fa-files"></i> ${headerText}
+                        `;
+                        
+                        debugLog(`✅ 파일 정보 표시 완료: ${data.files.length}개 파일`, 'info');
+                    } else {
+                        debugLog('표시할 파일이 없음', 'info');
+                    }
+                } catch (error) {
+                    debugLog(`파일 목록 로드 오류: ${error.message}`, 'error');
+                }
+            }
+
+            async updateStatus() {
+                try {
+                    const response = await fetch('/api/status');
+                    const status = await response.json();
+                    
+                    const statusText = document.getElementById('status-text');
+                    if (statusText) {
+                        if (status.data_loaded) {
+                            const fileTypes = Object.keys(status.file_type_stats || {});
+                            if (fileTypes.length > 0) {
+                                const typeText = fileTypes.length > 1 ? 
+                                    `${fileTypes.length}종류` : fileTypes[0];
+                                statusText.textContent = `${status.processed_files}개 ${typeText} 문서 처리됨`;
+                            } else {
+                                statusText.textContent = `${status.processed_files}개 문서 처리됨`;
+                            }
+                        } else {
+                            statusText.textContent = '문서가 업로드되지 않았습니다';
+                        }
+                    }
+                    
+                    debugLog(`상태 업데이트: ${status.data_loaded ? '문서 있음' : '문서 없음'}`, 'info');
+                } catch (error) {
+                    debugLog(`상태 업데이트 오류: ${error.message}`, 'error');
+                }
+            }
+
+            async sendMessage() {
+                const message = this.messageInput.value.trim();
+                debugLog(`sendMessage 호출됨: "${message}"`, 'info');
+                
+                if (!message) {
+                    debugLog('빈 메시지로 인해 전송 취소', 'info');
+                    return;
+                }
+
+                // 사용자 메시지 추가
+                this.addMessage(message, 'user');
+                this.messageInput.value = '';
+                this.messageInput.style.height = 'auto';
+
+                // 로딩 표시
+                this.showLoading(true);
+                debugLog('로딩 표시 시작', 'info');
+
+                try {
+                    debugLog('API 요청 시작...', 'info');
+                    const startTime = Date.now();
+                    
+                    const response = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ message }),
+                    });
+
+                    const responseTime = Date.now() - startTime;
+                    debugLog(`API 응답 받음: ${response.status} (${responseTime}ms)`, 'info');
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    debugLog(`API 응답 파싱 완료: success=${data.success}`, 'info');
+                    
+                    if (data.success) {
+                        this.addMessage(data.message, 'bot', data.timestamp);
+                        debugLog('✅ 응답 메시지 화면에 추가 완료', 'info');
+                    } else {
+                        this.addMessage(data.message || '오류가 발생했습니다.', 'bot');
+                        debugLog(`⚠️ API 응답 실패: ${data.message}`, 'error');
+                    }
+                } catch (error) {
+                    debugLog(`❌ 전송 오류: ${error.message}`, 'error');
+                    this.addMessage('네트워크 오류가 발생했습니다. 다시 시도해주세요.', 'bot');
+                }
+
+                this.showLoading(false);
+                debugLog('로딩 표시 종료', 'info');
+            }
+
+            addMessage(content, type, timestamp = null) {
+                debugLog(`메시지 추가: ${type} - ${content.substring(0, 50)}...`, 'info');
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${type}-message`;
+
+                const now = new Date();
+                const timeStr = timestamp || now.toLocaleTimeString('ko-KR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+
+                const icon = type === 'user' ? 'fa-user' : 'fa-robot';
+                
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <div class="message-icon">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <div class="message-text">
+                            <div class="message-body">${this.formatMessage(content)}</div>
+                            <div class="message-time">${timeStr}</div>
+                        </div>
+                    </div>
+                `;
+
+                this.messagesContainer.appendChild(messageDiv);
+                this.scrollToBottom();
+                
+                debugLog('✅ 메시지 DOM에 추가 완료', 'info');
+            }
+
+            formatMessage(content) {
+                // 마크다운 스타일 포맷팅
+                return content
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/\n/g, '<br>');
+            }
+
+            showLoading(show) {
+                if (this.loadingOverlay) {
+                    this.loadingOverlay.style.display = show ? 'flex' : 'none';
+                }
+                this.sendButton.disabled = show;
+                this.messageInput.disabled = show;
+                
+                debugLog(`로딩 상태 변경: ${show ? '표시' : '숨김'}`, 'info');
+            }
+
+            scrollToBottom() {
+                this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+            }
+
+            showToast(message, type = 'success') {
+                const toast = document.getElementById('toast');
+                if (toast) {
+                    toast.textContent = message;
+                    toast.className = `toast ${type} show`;
+                    
+                    setTimeout(() => {
+                        toast.classList.remove('show');
+                    }, 3000);
+                }
+            }
+        }
+
+        // 페이지 로드 완료 후 챗봇 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            debugLog('DOM 로드 완료, ChatBot 초기화 시작', 'info');
+            try {
+                new ChatBot();
+                debugLog('✅ ChatBot 초기화 성공', 'info');
+            } catch (error) {
+                debugLog(`❌ ChatBot 초기화 실패: ${error.message}`, 'error');
+                console.error('ChatBot 초기화 오류:', error);
+            }
+        });
+
+        // 페이지 로드 완료
+        window.addEventListener('load', () => {
+            debugLog('페이지 로드 완료', 'info');
+        });
+
+        // 오류 캐치
+        window.addEventListener('error', (e) => {
+            debugLog(`전역 오류 발생: ${e.message}`, 'error');
+            console.error('전역 오류:', e);
+        });
+    </script>
+</body>
+</html>
